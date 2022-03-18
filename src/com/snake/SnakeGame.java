@@ -1,30 +1,36 @@
 package com.snake;
 
 import javax.swing.*;
-import javax.swing.text.html.HTMLDocument;
 import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 public class SnakeGame extends JFrame {
-
     private static final int SCREEN_WIDTH = 700;
     private static final int SCREEN_HEIGHT = 700;
 
     private static final int TILE_WIDTH = 20;
     private static final int TILE_HEIGHT = 20;
 
-    Point snake;
-    Painter snakeFace;
-    long fp = 100;
+    private int score = 0;
 
-    int direction = KeyEvent.VK_RIGHT; // default direction
+    private long fp = 50;
+    private int direction = KeyEvent.VK_RIGHT; // default direction
+
+    private Point snake;
+    private Painter snakeFace;
+    private Point food;
+    private static final int[] possibleLocations = new int[(SCREEN_WIDTH/TILE_WIDTH)+1];
+    ArrayList<Point> snakeTail = new ArrayList<>();
 
     public SnakeGame(){
         // set dimentions
         setTitle("~ SNAKE GAME ~");
         setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
         setResizable(false);
+
         // centering game screen
         Dimension screenDim = Toolkit.getDefaultToolkit().getScreenSize();
         this.setLocation(screenDim.width/2 - SCREEN_WIDTH/2, screenDim.height/2 - SCREEN_HEIGHT/2);
@@ -34,26 +40,62 @@ public class SnakeGame extends JFrame {
         Controls controls = new Controls();
         this.addKeyListener(controls);
 
-        snake = new Point(SCREEN_WIDTH/2 + TILE_WIDTH/2 ,SCREEN_HEIGHT/2 + TILE_HEIGHT/2);
+        startGame();
+
         snakeFace = new Painter();
         this.getContentPane().add(snakeFace);
 
         Frame frame = new Frame();
         Thread trd = new Thread(frame);
         trd.start();
+
         // visible
         setVisible(true);
     }
 
+    public void startGame(){
+        for (int i = 0; i < SCREEN_WIDTH/TILE_WIDTH - 2; i++) {
+            possibleLocations[i] = 20*i;
+        }
+        System.out.println(Arrays.toString(possibleLocations));
+        food = new Point(possibleLocations[(int)(Math.random()*(SCREEN_WIDTH/TILE_WIDTH + 1))], possibleLocations[(int)(Math.random()*(SCREEN_WIDTH/TILE_WIDTH + 1))]);
+        snake = new Point(SCREEN_WIDTH/2 + TILE_WIDTH/2 ,SCREEN_HEIGHT/2 + TILE_HEIGHT/2);
+        snakeTail.add(snake);
+    }
+
+    public void putFood(){
+
+        snakeTail.add(0,new Point(snake.x, snake.y));
+        snakeTail.remove(snakeTail.size()-1);
+
+        if (food.x == snake.x && food.y == snake.y) {
+            food.x = possibleLocations[(int) (Math.random() * (SCREEN_WIDTH / TILE_WIDTH + 1))];
+            food.y = possibleLocations[(int) (Math.random() * (SCREEN_WIDTH / TILE_WIDTH + 1))];
+            score += 1;
+            snakeTail.add(0,new Point(snake.x, snake.y));
+        }
+    }
+
     public void refresh(){
+        putFood();
         snakeFace.repaint();
     }
+
 
     public class Painter extends JPanel {
         public void paintComponent(Graphics g){
             super.paintComponent(g);
-            g.setColor(new Color(95,119,9));
-            g.fillRect(snake.x, snake.y, TILE_WIDTH,TILE_HEIGHT);
+
+            // draw each point od the snake tail
+            g.setColor(new Color(23,255,49));
+            for (Point point : snakeTail) {
+                g.fillRect(point.x, point.y, TILE_WIDTH, TILE_HEIGHT);
+            }
+
+            g.setColor(new Color(128,0,0));
+            g.fillRect(food.x, food.y, TILE_WIDTH,TILE_HEIGHT);
+
+            // draw grid
             for (int i = 0; i < SCREEN_WIDTH; i = i + TILE_WIDTH) {
                 for (int j = 0; j < SCREEN_HEIGHT; j = j + TILE_HEIGHT) {
                     g.setColor(new Color(25,18,21));
@@ -119,7 +161,6 @@ public class SnakeGame extends JFrame {
                     last = System.currentTimeMillis();
                 }
             }
-
         }
 
     }
