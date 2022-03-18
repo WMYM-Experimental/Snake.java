@@ -10,6 +10,5 @@ public class Main {
         Snake snake = new Snake();
         Food food = new Food();
         SnakeGame s = new SnakeGame(snake, food, GAME_DIM, TILE_DIM, fp);
-
     }
 }
