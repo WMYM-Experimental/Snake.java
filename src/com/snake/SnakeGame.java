@@ -1,6 +1,7 @@
 package com.snake;
 
 import javax.swing.*;
+import javax.swing.text.html.HTMLDocument;
 import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
@@ -15,6 +16,8 @@ public class SnakeGame extends JFrame {
 
     Point snake;
     Painter snakeFace;
+    long fp = 100;
+
     int direction = KeyEvent.VK_RIGHT; // default direction
 
     public SnakeGame(){
@@ -34,8 +37,16 @@ public class SnakeGame extends JFrame {
         snake = new Point(SCREEN_WIDTH/2 + TILE_WIDTH/2 ,SCREEN_HEIGHT/2 + TILE_HEIGHT/2);
         snakeFace = new Painter();
         this.getContentPane().add(snakeFace);
+
+        Frame frame = new Frame();
+        Thread trd = new Thread(frame);
+        trd.start();
         // visible
         setVisible(true);
+    }
+
+    public void refresh(){
+        snakeFace.repaint();
     }
 
     public class Painter extends JPanel {
@@ -74,6 +85,43 @@ public class SnakeGame extends JFrame {
                 }
             }
         }
+    }
+
+    public class Frame extends Thread{
+        long last = 0;
+        public void run(){
+            while(true){
+                if((System.currentTimeMillis() - last) > fp){
+                    if (direction == KeyEvent.VK_UP){
+                        snake.y = snake.y - TILE_HEIGHT;
+                        if (snake.y < 0 ){
+                            snake.y = SCREEN_HEIGHT - 2 * TILE_HEIGHT;
+                        }
+                    }else if(direction == KeyEvent.VK_DOWN){
+                        snake.y = snake.y + TILE_HEIGHT;
+                        if (snake.y > SCREEN_HEIGHT - 2 * TILE_HEIGHT){
+                            snake.y = 0;
+                        }
+                    }else if(direction == KeyEvent.VK_LEFT){
+                        snake.x = snake.x - TILE_HEIGHT;
+                        if (snake.x < 0 ){
+                            snake.x = SCREEN_WIDTH - 2 * TILE_WIDTH;
+                        }
+                    }else if(direction == KeyEvent.VK_RIGHT){
+                        snake.x = snake.x + TILE_WIDTH;
+                        if (snake.x > SCREEN_WIDTH - 2 * TILE_WIDTH){
+                            snake.x = 0;
+                        }
+                    }else{
+                        break;
+                    }
+                    refresh();
+                    last = System.currentTimeMillis();
+                }
+            }
+
+        }
+
     }
 
 
